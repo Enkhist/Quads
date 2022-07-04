@@ -1,6 +1,6 @@
-from treys.card import Card
-from treys.evaluator import PLOEvaluator
-from treys.deck import Deck
+from quads.card import Card
+from quads.evaluator import PLOEvaluator
+from quads.deck import Deck
 
 
 # create a card

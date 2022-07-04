@@ -1,4 +1,4 @@
-Treys
+Quads
 =====
 
 A pure Python poker hand evaluation library
@@ -12,35 +12,35 @@ Installation
 
 ::
 
-   $ pip install treys
+   $ pip install Quads
 
 Implementation notes
 --------------------
 
-Treys is a Python 3 port of
+Quads is a Python 3 port of
 `Deuces <https://github.com/worldveil/deuces>`__ based on the initial work in
 `msaindon’s <https://github.com/msaindon/deuces>`__ fork. Deuces was written 
 by `Will Drevo <http://willdrevo.com/>`__ for the MIT Pokerbots Competition. 
 
-Treys is lightweight and fast. All lookups are done with bit arithmetic and
-dictionary lookups. That said, Treys won’t beat a C implemenation (~250k
+Quads is lightweight and fast. All lookups are done with bit arithmetic and
+dictionary lookups. That said, Quads won’t beat a C implemenation (~250k
 eval/s) but it is useful for situations where Python is required or
 where bots are allocated reasonable thinking time (human time scale).
 
-Treys handles 5, 6, and 7 card hand lookups. The 6 and 7 card lookups
+Quads handles 5, 6, and 7 card hand lookups. The 6 and 7 card lookups
 are done by combinatorially evaluating the 5 card choices.
 
 Usage
 -----
 
-Treys is easy to set up and use.
+Quads is easy to set up and use.
 
 .. code:: python
 
-   >>> from treys import Card
+   >>> from Quads import Card
    >>> card = Card.new('Qh')
 
-Card objects are represented as integers to keep Treys performant and
+Card objects are represented as integers to keep Quads performant and
 lightweight.
 
 Now let’s create the board and an example Texas Hold’em hand:
@@ -71,7 +71,7 @@ Otherwise move straight to evaluating your hand strength:
 
 .. code:: python
 
-   >>> from treys import Evaluator
+   >>> from Quads import Evaluator
    >>> evaluator = Evaluator()
    >>> print(evaluator.evaluate(board, hand))
    1600
@@ -81,11 +81,11 @@ Flush and 7462 is unsuited 7-5-4-3-2, as there are only 7642 distinctly
 ranked hands in poker.
 
 If you want to deal out cards randomly from a deck, you can also do that
-with Treys:
+with Quads:
 
 .. code:: python
 
-   >>> from treys import Deck
+   >>> from Quads import Deck
    >>> deck = Deck()
    >>> board = deck.draw(5)
    >>> player1_hand = deck.draw(2)
