@@ -1,7 +1,7 @@
 import itertools
 from typing import Sequence
 
-from .card import Card
+from ..card import Card
 from .lookup import LookupTable
 
 

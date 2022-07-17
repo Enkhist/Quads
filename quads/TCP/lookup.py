@@ -2,67 +2,55 @@ from collections.abc import Iterator
 import itertools
 from typing import Sequence
 
-from .card import Card
+from ..card import Card
 
 
 class LookupTable:
     """
     Number of Distinct Hand Values:
 
-    Straight Flush   10 
-    Four of a Kind   156      [(13 choose 2) * (2 choose 1)]
-    Full Houses      156      [(13 choose 2) * (2 choose 1)]
-    Flush            1277     [(13 choose 5) - 10 straight flushes]
-    Straight         10 
-    Three of a Kind  858      [(13 choose 3) * (3 choose 1)]
-    Two Pair         858      [(13 choose 3) * (3 choose 2)]
-    One Pair         2860     [(13 choose 4) * (4 choose 1)]
-    High Card      + 1277     [(13 choose 5) - 10 straights]
+    Straight Flush   12
+    Three of a Kind  13
+    Straight         12
+    Flush            274     [(13 choose 3) - 12 straight flushes]
+    One Pair         156     [(13 choose 4) * (4 choose 1)]
+    High Card      + 274     [(13 choose 5) - 10 straights]
     -------------------------
-    TOTAL            7462
+    TOTAL            741
 
     Here we create a lookup table which maps:
-        5 card hand's unique prime product => rank in range [1, 7462]
+        3 card hand's unique prime product => rank in range [1, 741]
 
     Examples:
     * Royal flush (best hand possible)          => 1
-    * 7-5-4-3-2 unsuited (worst hand possible)  => 7462
+    * 5-3-2 unsuited (worst hand possible)  => 741
     """
-    MAX_ROYAL_FLUSH: int     = 1
-    MAX_STRAIGHT_FLUSH: int  = 10
-    MAX_FOUR_OF_A_KIND: int  = 166
-    MAX_FULL_HOUSE: int      = 322 
-    MAX_FLUSH: int           = 1599
-    MAX_STRAIGHT: int        = 1609
-    MAX_THREE_OF_A_KIND: int = 2467
-    MAX_TWO_PAIR: int        = 3325
-    MAX_PAIR: int            = 6185
-    MAX_HIGH_CARD: int       = 7462
+    MAX_MINIROYAL: int       = 1
+    MAX_STRAIGHT_FLUSH: int  = 12
+    MAX_THREE_OF_A_KIND: int = 25
+    MAX_STRAIGHT: int        = 37
+    MAX_FLUSH: int           = 311
+    MAX_PAIR: int            = 467
+    MAX_HIGH_CARD: int       = 741
 
     MAX_TO_RANK_CLASS: dict[int, int] = {
-        MAX_ROYAL_FLUSH: 0,
+        MAX_MINIROYAL: 0,
         MAX_STRAIGHT_FLUSH: 1,
-        MAX_FOUR_OF_A_KIND: 2,
-        MAX_FULL_HOUSE: 3,
+        MAX_THREE_OF_A_KIND: 2,
+        MAX_STRAIGHT: 3,
         MAX_FLUSH: 4,
-        MAX_STRAIGHT: 5,
-        MAX_THREE_OF_A_KIND: 6,
-        MAX_TWO_PAIR: 7,
-        MAX_PAIR: 8,
-        MAX_HIGH_CARD: 9
+        MAX_PAIR: 5,
+        MAX_HIGH_CARD: 6
     }
 
     RANK_CLASS_TO_STRING: dict[int, str] = {
-        0: "Royal Flush",
+        0: "Mini Royal",
         1: "Straight Flush",
-        2: "Four of a Kind",
-        3: "Full House",
+        2: "Three of a Kind",
+        3: "Straight",
         4: "Flush",
-        5: "Straight",
-        6: "Three of a Kind",
-        7: "Two Pair",
-        8: "Pair",
-        9: "High Card"
+        5: "Pair",
+        6: "High Card"
     }
 
     def __init__(self) -> None:
@@ -89,26 +77,28 @@ class LookupTable:
 
         # straight flushes in rank order
         straight_flushes = [
-            7936,  # int('0b1111100000000', 2), # royal flush
-            3968,  # int('0b111110000000', 2),
-            1984,  # int('0b11111000000', 2),
-            992,   # int('0b1111100000', 2),
-            496,   # int('0b111110000', 2),
-            248,   # int('0b11111000', 2),
-            124,   # int('0b1111100', 2),
-            62,    # int('0b111110', 2),
-            31,    # int('0b11111', 2),
-            4111   # int('0b1000000001111', 2) # 5 high
+            7168,  # int('0b1110000000000', 2), # royal flush
+            3854,  # int('0b111000000000', 2),
+            1792,  # int('0b11100000000', 2),
+            896,   # int('0b1110000000', 2),
+            448,   # int('0b111000000', 2),
+            224,   # int('0b11100000', 2),
+            112,   # int('0b1110000', 2),
+            56,    # int('0b111000', 2),
+            28,    # int('0b11100', 2),
+            14,    # int('0b1110', 2),
+            7,     # int('0b111', 2),
+            4099   # int('0b1000000000011', 2) # 3 high
         ]
 
         # now we'll dynamically generate all the other
         # flushes (including straight flushes)
         flushes = []
-        gen = self.get_lexographically_next_bit_sequence(int('0b11111', 2))
+        gen = self.get_lexographically_next_bit_sequence(int('0b111', 2))
 
-        # 1277 = number of high cards
+        # 274 = number of high cards
         # 1277 + len(str_flushes) is number of hands with all cards unique rank
-        for i in range(1277 + len(straight_flushes) - 1):   # we also iterate over SFs
+        for i in range(274 + len(straight_flushes) - 1):   # we also iterate over SFs
             # pull the next flush pattern from our generator
             f = next(gen)
 
@@ -131,16 +121,16 @@ class LookupTable:
         # now add to the lookup map:
         # start with straight flushes and the rank of 1
         # since it is the best hand in poker
-        # rank 1 = Royal Flush!
+        # rank 1 = Miniroyal!
         rank = 1
         for sf in straight_flushes:
             prime_product = Card.prime_product_from_rankbits(sf)
             self.flush_lookup[prime_product] = rank
             rank += 1
 
-        # we start the counting for flushes on max full house, which
-        # is the worst rank that a full house can have (2,2,2,3,3)
-        rank = LookupTable.MAX_FULL_HOUSE + 1
+        # we start the counting for flushes on max straight, which
+        # is the worst rank that an unsuited straight can have (2,3,5)
+        rank = LookupTable.MAX_STRAIGHT + 1
         for f in flushes:
             prime_product = Card.prime_product_from_rankbits(f)
             self.flush_lookup[prime_product] = rank
@@ -157,7 +147,7 @@ class LookupTable:
 
         Reuses bit sequences from flush calculations.
         """
-        rank = LookupTable.MAX_FLUSH + 1
+        rank = LookupTable.MAX_THREE_OF_A_KIND+ 1
 
         for s in straights:
             prime_product = Card.prime_product_from_rankbits(s)
@@ -172,86 +162,30 @@ class LookupTable:
 
     def multiples(self) -> None:
         """
-        Pair, Two Pair, Three of a Kind, Full House, and 4 of a Kind.
+        Pair, Three of a Kind
         """
         backwards_ranks = list(range(len(Card.INT_RANKS) - 1, -1, -1))
 
-        # 1) Four of a Kind
+        # 1) Three of a Kind
         rank = LookupTable.MAX_STRAIGHT_FLUSH + 1
-
-        # for each choice of a set of four rank
-        for i in backwards_ranks:
-
-            # and for each possible kicker rank
-            kickers = backwards_ranks[:]
-            kickers.remove(i)
-            for k in kickers:
-                product = Card.PRIMES[i]**4 * Card.PRIMES[k]
-                self.unsuited_lookup[product] = rank
-                rank += 1
-        
-        # 2) Full House
-        rank = LookupTable.MAX_FOUR_OF_A_KIND + 1
-
-        # for each three of a kind
-        for i in backwards_ranks:
-
-            # and for each choice of pair rank
-            pairranks = backwards_ranks[:]
-            pairranks.remove(i)
-            for pr in pairranks:
-                product = Card.PRIMES[i]**3 * Card.PRIMES[pr]**2
-                self.unsuited_lookup[product] = rank
-                rank += 1
-
-        # 3) Three of a Kind
-        rank = LookupTable.MAX_STRAIGHT + 1
 
         # pick three of one rank
         for r in backwards_ranks:
-
-            kickers = backwards_ranks[:]
-            kickers.remove(r)
-            gen = itertools.combinations(kickers, 2)
-
-            for kickers_2combo in gen:
-
-                c1, c2 = kickers_2combo
-                product = Card.PRIMES[r]**3 * Card.PRIMES[c1] * Card.PRIMES[c2]
-                self.unsuited_lookup[product] = rank
-                rank += 1
-
-        # 4) Two Pair
-        rank = LookupTable.MAX_THREE_OF_A_KIND + 1
-
-        tpgen = itertools.combinations(tuple(backwards_ranks), 2)
-        for tp in tpgen:
-
-            pair1, pair2 = tp
-            kickers = backwards_ranks[:]
-            kickers.remove(pair1)
-            kickers.remove(pair2)
-            for kicker in kickers:
-
-                product = Card.PRIMES[pair1]**2 * Card.PRIMES[pair2]**2 * Card.PRIMES[kicker]
-                self.unsuited_lookup[product] = rank
-                rank += 1
+            product = Card.PRIMES[r]**3
+            self.unsuited_lookup[product] = rank
+            rank += 1
 
         # 5) Pair
-        rank = LookupTable.MAX_TWO_PAIR + 1
+        rank = LookupTable.MAX_FLUSH + 1
 
         # choose a pair
         for pairrank in backwards_ranks:
 
             kickers = backwards_ranks[:]
             kickers.remove(pairrank)
-            kgen = itertools.combinations(tuple(kickers), 3)
 
-            for kickers_3combo in kgen:
-
-                k1, k2, k3 = kickers_3combo
-                product = Card.PRIMES[pairrank]**2 * Card.PRIMES[k1] \
-                    * Card.PRIMES[k2] * Card.PRIMES[k3]
+            for kicker in kickers:
+                product = Card.PRIMES[pairrank]**2 * Card.PRIMES[kicker]
                 self.unsuited_lookup[product] = rank
                 rank += 1
 

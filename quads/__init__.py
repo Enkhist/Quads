@@ -1,3 +1,4 @@
 from .card import Card
 from .deck import Deck
-from .evaluator import Evaluator, PLOEvaluator
+from . import TCP
+from . import Five
