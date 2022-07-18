@@ -64,7 +64,7 @@ class Evaluator:
 
         for combo in itertools.combinations(cards, 5):
 
-            score = self._five(combo)
+            score = self._rank(combo)
             if score < minimum:
                 minimum = score
 
