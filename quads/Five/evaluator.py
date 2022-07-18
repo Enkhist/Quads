@@ -22,23 +22,20 @@ class Evaluator:
     def __init__(self) -> None:
 
         self.table = LookupTable()
-        
-        self.hand_size_map = {
-            5: self._five,
-            6: self._six,
-            7: self._seven
-        }
 
-    def evaluate(self, hand: list[int], board: list[int]) -> int:
+    def evaluate(self, cards: list[int]) -> int:
         """
         This is the function that the user calls to get a hand rank. 
 
         No input validation because that's cycles!
         """
-        all_cards = hand + board
-        return self.hand_size_map[len(all_cards)](all_cards)
+        poolSize = len(cards)
+        if poolSize == 5:
+            return self._rank(cards)
+        elif poolSize > 5:
+            return self._poolrank(cards)
 
-    def _five(self, cards: Sequence[int]) -> int:
+    def _rank(self, cards: Sequence[int]) -> int:
         """
         Performs an evalution given cards in integer form, mapping them to
         a rank in the range [1, 7462], with lower ranks being more powerful.
@@ -57,7 +54,7 @@ class Evaluator:
             prime = Card.prime_product_from_hand(cards)
             return self.table.unsuited_lookup[prime]
 
-    def _six(self, cards: Sequence[int]) -> int:
+    def _poolrank(self, cards: Sequence[int]) -> int:
         """
         Performs five_card_eval() on all (6 choose 5) = 6 subsets
         of 5 cards in the set of 6 to determine the best ranking, 
@@ -67,22 +64,6 @@ class Evaluator:
 
         for combo in itertools.combinations(cards, 5):
 
-            score = self._five(combo)
-            if score < minimum:
-                minimum = score
-
-        return minimum
-
-    def _seven(self, cards: Sequence[int]) -> int:
-        """
-        Performs five_card_eval() on all (7 choose 5) = 21 subsets
-        of 5 cards in the set of 7 to determine the best ranking, 
-        and returns this ranking.
-        """
-        minimum = LookupTable.MAX_HIGH_CARD
-
-        for combo in itertools.combinations(cards, 5):
-            
             score = self._five(combo)
             if score < minimum:
                 minimum = score
