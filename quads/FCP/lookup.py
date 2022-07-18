@@ -24,8 +24,8 @@ class LookupTable:
         5 card hand's unique prime product => rank in range [1, 7462]
 
     Examples:
-    * Royal flush (best hand possible)          => 1
-    * 7-5-4-3-2 unsuited (worst hand possible)  => 7462
+    * Four aces (best hand possible)            => 1
+    * 6-4-3-2 unsuited (worst hand possible)    => 2613
     """
     MAX_FOUR_OF_A_KIND: int  = 13
     MAX_STRAIGHT_FLUSH: int  = 24

@@ -22,7 +22,7 @@ class LookupTable:
         3 card hand's unique prime product => rank in range [1, 741]
 
     Examples:
-    * Royal flush (best hand possible)          => 1
+    * Miniroyal (best hand possible)        => 1
     * 5-3-2 unsuited (worst hand possible)  => 741
     """
     MAX_MINIROYAL: int       = 1
